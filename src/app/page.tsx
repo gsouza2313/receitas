@@ -1,6 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { recipes } from "@/lib/data";
+import RecipeCard from "@/components/RecipeCard";
 
 export default function Home() {
   const featuredRecipes = recipes.slice(0, 3);
@@ -24,7 +25,9 @@ export default function Home() {
         <div className="flex flex-col items-center container mx-auto gap-8">
           <h2 className="text-lg font-bold text-black">Receitas em destaque</h2>
           <div className="flex w-full gap-8">
-            {/* TODO: receitas */}
+            {featuredRecipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe}/>
+            ))}
           </div>
           <Link className="flex text-orange-400 hover:text-orange-700 transition-colors" href="/receitas">
             Ver todas as receitas
