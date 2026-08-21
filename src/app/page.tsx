@@ -24,7 +24,7 @@ export default function Home() {
         <div className="flex flex-col items-center container mx-auto gap-8">
           <h2 className="text-lg font-bold text-black">Receitas em destaque</h2>
           <div className="flex w-full gap-8">
-            {/* receitas */}
+            {/* TODO: receitas */}
           </div>
           <Link className="flex text-orange-400 hover:text-orange-700 transition-colors" href="/receitas">
             Ver todas as receitas
