@@ -46,7 +46,7 @@ export const recipes: Recipe[] = [
     id: "2",
     title: "Salmão Grelhado com Molho de Maracujá",
     description: "Um prato sofisticado e leve, com salmão grelhado acompanhado de molho agridoce de maracujá.",
-    image: "/receitas/salmao.jpg",
+    image: "/receitas/salmao.png",
     prepTime: "15 minutos",
     cookTime: "20 minutos",
     servings: 4,
