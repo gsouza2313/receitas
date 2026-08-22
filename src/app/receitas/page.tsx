@@ -4,9 +4,9 @@ import { recipes } from "@/lib/data"
 export default function ReceitasPage() {
     return (
         <main className="grow py-8">
-            <div className="container mx-auto">
+            <div className="container mx-auto py-8">
                 <h1 className="text-3xl font-bold">Todas as receitas</h1>
-                <div className="grid grid-cols-3 gap-8 nt-8">
+                <div className="grid grid-cols-3 gap-8 nt-8 py-8">
                     {recipes.map((recipe) => (
                         <RecipeCard key={recipe.id} recipe={recipe} />
                     ))}
