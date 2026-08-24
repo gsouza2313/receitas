@@ -11,7 +11,7 @@ export default function Home() {
       {/* HERO*/}
       <section className="bg-orange-50 py-12">
         <div className="flex flex-col gap-6 items-center container mx-auto">
-          <h1 className="text-5xl font-bold text-black">Receitas deliciosas</h1>
+          <h1 className="text-5xl font-bold text-black">Receitas Refinadas</h1>
           <p className="text-xl text-black">Descubra receitas saborosas para refinar seu paladar</p>
 
           <Link className="bg-orange-500 hover:bg-orange-700 transition-colors text-white font-bold rounded-lg px-3 py-2" href="/receitas">
