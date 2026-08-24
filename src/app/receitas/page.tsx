@@ -1,19 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { SearchIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 import RecipeCard from "@/components/RecipeCard";
 import RecipeFormModal from "@/components/RecipeFormModal";
 import { Button } from "@/components/ui/button";
-import { recipes as initialRecipes, type Recipe } from "@/lib/data";
+import { Input } from "@/components/ui/input";
+import { api } from "@/lib/api";
+import type { Recipe } from "@/lib/data";
 
 export default function ReceitasPage() {
-    const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
+    const [recipes, setRecipes] = useState<Recipe[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<"create" | "edit">("create");
     const [selectedRecipe, setSelectedRecipe] = useState<Recipe | undefined>(undefined);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    useEffect(() => {
+        const fetchRecipes = async () => {
+            try {
+                const { data } = await api.get<Recipe[]>("/receitas");
+                setRecipes(data);
+            } catch {
+                toast.error("Não foi possível carregar as receitas.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchRecipes();
+    }, []);
+
+    const filteredRecipes = useMemo(() => {
+        const term = searchTerm.trim().toLowerCase();
+        if (!term) return recipes;
+        return recipes.filter((recipe) =>
+            recipe.title.toLowerCase().includes(term)
+        );
+    }, [recipes, searchTerm]);
 
     const handleOpenCreateModal = () => {
         setModalMode("create");
@@ -31,22 +60,30 @@ export default function ReceitasPage() {
         setIsFormModalOpen(false);
     };
 
-    const handleSaveRecipe = (recipeData: Omit<Recipe, "id"> | Recipe) => {
-        if (modalMode === "create") {
-            const newRecipe: Recipe = {
-                ...recipeData,
-                id: crypto.randomUUID(),
-            };
-            setRecipes((current) => [newRecipe, ...current]);
-        } else {
-            const updatedRecipe = recipeData as Recipe;
-            setRecipes((current) =>
-                current.map((recipe) =>
-                    recipe.id === updatedRecipe.id ? updatedRecipe : recipe
-                )
-            );
+    const handleSaveRecipe = async (recipeData: Omit<Recipe, "id"> | Recipe) => {
+        try {
+            if (modalMode === "create") {
+                const { data: newRecipe } = await api.post<Recipe>(
+                    "/receitas",
+                    recipeData
+                );
+                setRecipes((current) => [newRecipe, ...current]);
+                toast.success("Receita criada com sucesso.");
+            } else {
+                const updatedRecipe = recipeData as Recipe;
+                const { data } = await api.put<Recipe>(
+                    `/receitas/${updatedRecipe.id}`,
+                    updatedRecipe
+                );
+                setRecipes((current) =>
+                    current.map((recipe) => (recipe.id === data.id ? data : recipe))
+                );
+                toast.success("Receita atualizada com sucesso.");
+            }
+            handleCloseFormModal();
+        } catch {
+            toast.error("Não foi possível salvar a receita.");
         }
-        handleCloseFormModal();
     };
 
     const handleOpenDeleteModal = (recipe: Recipe) => {
@@ -59,12 +96,19 @@ export default function ReceitasPage() {
         setSelectedRecipe(undefined);
     };
 
-    const handleDeleteRecipe = () => {
+    const handleDeleteRecipe = async () => {
         if (!selectedRecipe) return;
-        setRecipes((current) =>
-            current.filter((recipe) => recipe.id !== selectedRecipe.id)
-        );
-        handleCloseDeleteModal();
+        try {
+            await api.delete(`/receitas/${selectedRecipe.id}`);
+            setRecipes((current) =>
+                current.filter((recipe) => recipe.id !== selectedRecipe.id)
+            );
+            toast.success("Receita excluída com sucesso.");
+        } catch {
+            toast.error("Não foi possível excluir a receita.");
+        } finally {
+            handleCloseDeleteModal();
+        }
     };
 
     return (
@@ -76,16 +120,35 @@ export default function ReceitasPage() {
                         Nova receita
                     </Button>
                 </div>
-                <div className="grid grid-cols-3 gap-8 nt-8 py-8">
-                    {recipes.map((recipe) => (
-                        <RecipeCard
-                            key={recipe.id}
-                            recipe={recipe}
-                            onEdit={() => handleOpenEditModal(recipe)}
-                            onDelete={() => handleOpenDeleteModal(recipe)}
-                        />
-                    ))}
+
+                <div className="relative mt-6 max-w-sm">
+                    <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                        placeholder="Buscar receita pelo nome..."
+                        className="pl-9"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
+
+                {isLoading ? (
+                    <p className="mt-8 text-muted-foreground">Carregando receitas...</p>
+                ) : filteredRecipes.length === 0 ? (
+                    <p className="mt-8 text-muted-foreground">
+                        Nenhuma receita encontrada.
+                    </p>
+                ) : (
+                    <div className="grid grid-cols-3 gap-8 nt-8 py-8">
+                        {filteredRecipes.map((recipe) => (
+                            <RecipeCard
+                                key={recipe.id}
+                                recipe={recipe}
+                                onEdit={() => handleOpenEditModal(recipe)}
+                                onDelete={() => handleOpenDeleteModal(recipe)}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
 
             <RecipeFormModal

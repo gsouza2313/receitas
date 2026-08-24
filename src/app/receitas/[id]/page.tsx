@@ -1,6 +1,6 @@
 import InfoPill from "@/components/InfoPill";
 import PreparationStep from "@/components/PreparationStep";
-import { recipes } from "@/lib/data";
+import { getRecipeById } from "@/lib/recipesStore";
 import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,9 +12,11 @@ interface RecipePageProps {
   }>
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function ReceitaPage({ params }: RecipePageProps) {
   const { id } = await params
-  const recipe = recipes.find((recipe) => recipe.id === id)
+  const recipe = getRecipeById(id)
 
   if (!recipe) {
     return notFound()

@@ -1,10 +1,12 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { recipes } from "@/lib/data";
+import { getRecipes } from "@/lib/recipesStore";
 import RecipeCard from "@/components/RecipeCard";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
-  const featuredRecipes = recipes.slice(0, 3);
+  const featuredRecipes = getRecipes().slice(0, 3);
   return (
     <main className="grow">
 
